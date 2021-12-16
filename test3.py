@@ -28,7 +28,7 @@ def gen_model():
     return model
 
 # Train the model
-checkpoint_path = "training_2/cp-{epoch:04d}.ckpt"
+checkpoint_path = "btc_model/cp-{epoch:04d}.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 
 crypto_currency = 'BTC'
