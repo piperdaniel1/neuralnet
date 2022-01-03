@@ -38,6 +38,12 @@ model = gen_model()
 total_profit = 0
 money = 10000
 c=0
+short_profit = 0
+long_profit = 0
+num_shorts = 0
+num_longs = 0
+
+errors = []
 while dt.datetime(2020, 1, 1) + dt.timedelta(days=7) * c + dt.timedelta(days=67) < dt.datetime.now():
     offset = dt.timedelta(days=7) * c
     test_start = dt.datetime(2020, 1, 1) + offset
@@ -60,14 +66,26 @@ while dt.datetime(2020, 1, 1) + dt.timedelta(days=7) * c + dt.timedelta(days=67)
         profit_pct = (actual_close - current_close) / current_close
         print("Profit percentage if followed predicition: " + str(round(profit_pct[0][0] * 100, 2)) + "%")
         total_profit += round(profit_pct[0][0] * 100, 2)
+        long_profit += round(profit_pct[0][0] * 100, 2)
+        num_longs += 1
     elif current_close > pred_close:
         print("Price will go down!")
         profit_pct = ((actual_close - current_close) / current_close) * -1
         print("Profit percentage if followed predicition: " + str(round(profit_pct[0][0] * 100, 2)) + "%")
         total_profit += round(profit_pct[0][0] * 100, 2)
+        short_profit += round(profit_pct[0][0] * 100, 2)
+        num_shorts += 1
     else:
         print("Price will stay the same!")
         print("Profit percentage if followed predicition: 0%")
+
+    pred_close = scaler.inverse_transform(next_point)
+    actual_close = scaler.inverse_transform(scaled_data[-1:])
+    current_close = scaler.inverse_transform(full_data[-1:])
+    proj_profit = (pred_close - current_close) / current_close
+    actual_profit = (actual_close - current_close) / current_close
+    proj_error = abs(actual_profit - proj_profit)
+    errors.append(round(proj_error[0][0] * 100, 2))
 
     money *= (1 + profit_pct[0][0])
     print("Current close: $" + str(current_close))
@@ -75,10 +93,21 @@ while dt.datetime(2020, 1, 1) + dt.timedelta(days=7) * c + dt.timedelta(days=67)
     print("Actual one week close: $" + str(scaler.inverse_transform(scaled_data[-1:])))
     print("Difference %: " + str(((scaler.inverse_transform(next_point) - scaler.inverse_transform(scaled_data[-1:])) / scaler.inverse_transform(scaled_data[-1:])) * 100))
     print("Total profit: $" + str(total_profit))
+    print("    Long profit: $" + str(long_profit) + " from " + str(num_longs) + " longs")
+    print("    Short profit: $" + str(short_profit) + " from " + str(num_shorts) + " shorts")
     print("Money: $" + str(money))
+    print("Error in projection %: " + str(round(proj_error[0][0] * 100, 2)) + "%")
+    print("    Projected profit %: " + str(round(proj_profit[0][0] * 100, 2)) + "%")
+    print("    Actual profit %: " + str(round(actual_profit[0][0] * 100, 2)) + "%")
+    print("Current avg error: %" + str(round(np.mean(errors), 2)))
     print("\n")
     #plt.plot(scaler.inverse_transform(scaled_data), color='blue')
     #plt.plot(scaler.inverse_transform(full_data), color='green')
     #plt.scatter(67, scaler.inverse_transform(next_point), color='red')
     #plt.show()
     c+=1
+    
+print("FINISHED.")
+print("Total profit: $" + str(total_profit))
+print("Errors:", errors)
+print("Average error: " + str(np.mean(errors)))

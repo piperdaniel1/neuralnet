@@ -25,14 +25,14 @@ crypto_currency = 'BTC'
 against_currency = 'USD'
 
 start = dt.datetime(2016, 1, 1)
-end = dt.datetime(2020, 1, 1)
+end = dt.datetime.now()
 
 data = web.DataReader(crypto_currency + "-" + against_currency, 'yahoo', start, end)
 scaler = MinMaxScaler(feature_range=(0, 1))
 scaled_data = scaler.fit_transform(data['Close'].values.reshape(-1, 1))
 
 prediction_days = 60
-future_day = 7
+future_day = 11
 
 x_train, y_train = [], []
 
